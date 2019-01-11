@@ -1,57 +1,60 @@
 /**
  * Sample React Native App
  * https://github.com/facebook/react-native
- *
+ * Demo By Akhzar Nazir Simple GET API with ActivityIndicator
  * @format
  * @flow
  */
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View, Alert,AsyncStorage, Button,
-        SectionList,TouchableOpacity,Image} from 'react-native';
-
-var arrow_left=require('./arrow_left.png');
+import {Text, View,FlatList,ActivityIndicator} from 'react-native';
 
 type Props = {};
 export default class App extends Component<Props> {
 
   constructor(props) {
     super(props);
+    this.state={
+      isloading:true,
+      dataSource:[],
+      }
   }
 
-  _sectionHeader = (info) => {
-    var txt = info.section.key;
-    return <Text
-      style={{ height: 80, textAlign: 'center', textAlignVertical: 'center', backgroundColor: 'green', color: 'white', fontSize: 30 }}>{txt}</Text>
-  }
+  componentDidMount(){
+    return fetch('https://facebook.github.io/react-native/movies.json')
+      .then((response) => response.json())
+      .then((responseJson) => {
 
-  _renderItem = (info) => {
-    var txt = '  ' + info.item.title;
-    return <Text
-      style={{ height: 60, textAlignVertical: 'center', backgroundColor: "#ffffff", color: '#5C5C5C', fontSize: 15 }}>{txt}</Text>
+        this.setState({
+          isLoading: false,
+          dataSource: responseJson.movies,
+        }, function(){
+          // Alert.alert(''+this.state.dataSource[0].title)
+        });
+
+      })
+      .catch((error) =>{
+        console.error(error);
+      });
   }
 
   render() {
-
-    var sections = [
-      { key: "ہمارے شہر", data: [{ title: "لاہور" }, { title: "کراچی" }, { title: "اسلام آباد" }] },
-      { key: "ہمارے کھیل", data: [{ title: "ہاکی" }, { title: "کرکٹ" }, { title: "کبڈی" }, { title: "گلی ڈنڈہ" }, { title: "کوئی اور" }] },
-      { key: "ہمارے تعلیمی ادارے", data: [{ title: "پنجاب یونیورسٹی" }, { title: "افرو ایشین" }] },
-      { key: "ہمارے مدرسے", data: [{ title: "جامعہ نعیمیہ" }, { title: "جامعہ اشرفیہ" }, { title: "جامعہ دارالعلوم" },{ title: "جامعہ بنوری" }, { title: "جامعہ ہندسیہ" }, { title: "جامعہ کراچی" }] },
-    ];
-
+    if(this.state.isLoading){
+      return(
+        <View style={{flex: 1, padding: 20}}>
+          <ActivityIndicator/>
+        </View>
+      );
+    }else{
     return (
-      <View style={{ flex: 1 }}>
-        <SectionList
-          sections={sections}
-          renderSectionHeader={this._sectionHeader}
-          renderItem={this._renderItem}
-
-          ItemSeparatorComponent={() => <View><Text>____________________</Text></View>}
-          ListHeaderComponent={() => <View style={{ backgroundColor: '#25B960', alignItems: 'center', height: 40 }}><Text style={{ fontSize: 18, color: '#ffffff' }}>سب سے اوپر</Text></View>}
-          ListFooterComponent={() => <View style={{ backgroundColor: '#25B960', alignItems: 'center', height: 40 }}><Text style={{ fontSize: 18, color: '#ffffff' }}>سب سے نیچے</Text></View>}
+      <View style={{flex: 1, paddingTop:20}}>
+        <FlatList
+          data={this.state.dataSource}
+          renderItem={({item}) => <Text>{item.title}, {item.releaseYear}</Text>}
+          keyExtractor={({id}, index) => id}
         />
       </View>
     );
+    }
   }
 }
